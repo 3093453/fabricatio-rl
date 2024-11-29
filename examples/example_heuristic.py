@@ -1,6 +1,6 @@
 import numpy as np
-import gym
-from gym import register
+import gymnasium as gym
+from gymnasium import register
 from fabricatio_rl.core_state import State
 from fabricatio_rl.interface_templates import ReturnTransformer, \
     SchedulingUserInputs
@@ -66,6 +66,7 @@ if __name__ == "__main__":
         state_repr, reward, done, _ = env.step(action)
         n_steps += 1
     runtime = time() - init_time - start_time
+    print(f"Final Reward: {reward}")
     print(f"Test run on {seed} seeded random JSSP sample finished after "
           f"{n_steps} steps in {runtime} seconds after an init time of "
           f"{init_time} seconds.")
