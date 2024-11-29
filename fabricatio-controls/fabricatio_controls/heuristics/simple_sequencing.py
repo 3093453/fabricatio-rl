@@ -67,7 +67,7 @@ class LUDM(SequencingHeuristic):
         wait_flag = n_j_operations * state.params.max_jobs_visible
         wip = state.job_view_to_global_idx
         action = wait_flag
-        val_min = np.infty
+        val_min = np.inf
         for action_nr in state.legal_actions:
             if action_nr == wait_flag:
                 continue
