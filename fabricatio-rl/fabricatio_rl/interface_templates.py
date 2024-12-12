@@ -287,7 +287,7 @@ class SchedulingUserInputs:
                 job_op_durations[:nfo.n_ops[i]] = jobs[i][1]
                 job_pool.append([job_op_sequence, job_op_durations,
                                  job_template_vec, j_precedence])
-            self.__job_pool = np.array(job_pool)
+            self.__job_pool = np.array(job_pool, dtype="object")
         # TODO!!!
         # elif (self.operation_types == 'Fm'
         #       and self.operation_precedence == 'Jm'
