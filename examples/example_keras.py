@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import numpy as np
-import gym
+import gymnasium as gym
 
 from fabricatio_rl.core_state import State
 from fabricatio_rl.interface_templates import (Optimizer, ReturnTransformer,
