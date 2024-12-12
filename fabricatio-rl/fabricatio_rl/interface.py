@@ -1,6 +1,6 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 from fabricatio_rl.core import Core
@@ -226,7 +226,7 @@ class FabricatioRL(gym.Env):
     def set_core_rou_autoplay(self, val):
         self.core.set_rou_autoplay(val)
 
-    def reset(self) -> np.ndarray:
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> np.ndarray:
         # cycle seeds and inputs on reset
         if self.__no_change_reset:
             self.__no_change_reset = False
@@ -513,7 +513,11 @@ class FabricatioRL(gym.Env):
         """
         if self.__return_transformer is None:
             # something other than RL is using this simulation
+            # Set up a Dummy Action Space,
+            # Gym Requires it for validating the environment
+            self.observation_space = gym.spaces.Box(-np.inf, np.inf)
             return
+        
         state_repr = self.__return_transformer.transform_state(
             self.__core.state)
         self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf,

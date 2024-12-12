@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import numpy as np
 
 from fabricatio_rl.interface_templates import SchedulingUserInputs
@@ -22,8 +22,9 @@ if __name__ == "__main__":
     env = gym.make('fabricatio-v1')
 
     state, done = env.reset(), False
+
     while not done:
-        legal_actions = env.get_legal_actions()
+        legal_actions = env.unwrapped.get_legal_actions()
         state, reward, done, _ = env.step(np.random.choice(legal_actions))
 
     print(f'The makespan after a random run was {state.system_time}')

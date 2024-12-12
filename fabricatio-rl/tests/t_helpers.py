@@ -1,9 +1,9 @@
 from ast import literal_eval as make_tuple
 from mmap import mmap
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import register
+from gymnasium import register
 
 from fabricatio_rl.core_state import State
 from fabricatio_rl.env_utils import UndefinedLegalActionCall

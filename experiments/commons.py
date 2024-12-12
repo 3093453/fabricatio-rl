@@ -41,8 +41,8 @@ def log_stable_baselines_run(kwargs, run_logdir):
     del kwargs['return_transformer']
     for k in ['training_envs', 'validation_envs']:
         kwargs[k] = list(set([
-            si.path for si in kwargs[k].scheduling_inputs])) + [
-                        kwargs[k].seeds]
+            si.path for si in kwargs[k].unwrapped.scheduling_inputs])) + [
+                        kwargs[k].unwrapped.seeds]
     logpath = f'{run_logdir}/{kwargs["control_name"]}.log'
     print(f"saving parameter file tp {logpath}")
     with open(logpath, 'w') as f:

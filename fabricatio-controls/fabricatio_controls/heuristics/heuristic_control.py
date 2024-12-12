@@ -23,7 +23,7 @@ class HeuristicControl(Control):
         self.full_run = True
 
     def play_game(self, environ: 'FabricatioRL', initial_state=None) -> 'State':
-        env_c = deepcopy(environ)
+        env_c = deepcopy(environ.unwrapped)
         env_c.set_core_seq_autoplay(True)
         env_c.set_core_rou_autoplay(True)
         done, state = False, None

@@ -149,16 +149,16 @@ class MCTS:
             probs: a policy vector where the probability of the ith action is
                    proportional to Nsa[(s,a)]**(1./temp)
         """
-        environment.make_deterministic()
+        environment.unwrapped.make_deterministic()
         # state = deque(state)
         for i in range(self.args['numMCTSSims']):
-            environment_snapshot = deepcopy(environment)
+            environment_snapshot = deepcopy(environment.unwrapped)
             self.search(environment_snapshot, state)
 
-        s = environment.repr()
+        s = environment.unwrapped.repr()
         counts = [self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in
                   # at the root
-                  range(environment.action_space.n)]
+                  range(environment.unwrapped.action_space.n)]
 
         if temp == 0:
             # print('counts: {0}'.format(counts))
@@ -435,9 +435,9 @@ class AZEpisodeExecutor:
 
     def execute_episode(self, verbose=True):
         trail = []
-        state_frame = self.env.get_state()
-        actions = self.env.get_legal_actions()
-        mask = create_mask(self.env)
+        state_frame = self.env.unwrapped.get_state()
+        actions = self.env.unwrapped.get_legal_actions()
+        mask = create_mask(self.env.unwrapped)
         done = False
         examples = []
         reward = 0
@@ -448,8 +448,8 @@ class AZEpisodeExecutor:
             action, pi = self.__select_action(state, actions)
             state_frame, reward, done, _ = self.env.step(action)
             trail.append(action)
-            actions = self.env.get_legal_actions()
-            mask = create_mask(self.env)
+            actions = self.env.unwrapped.get_legal_actions()
+            mask = create_mask(self.env.unwrapped)
             state_reshaped = np.array(state).reshape((d_size, 1, -1))
             example = (state_reshaped, pi)
             state.append(state_frame)
@@ -474,10 +474,10 @@ class AZControl(Control):
         self.state_adapter = state_adapter
         self.optimizers = optimizers
         if environment is not None:
-            self.env.set_transformer(state_adapter)
-            self.env.set_optimizers(optimizers)
-            self.env.set_core_seq_autoplay(True)
-            self.env.set_core_rou_autoplay(True)
+            self.env.unwrapped.set_transformer(state_adapter)
+            self.env.unwrapped.set_optimizers(optimizers)
+            self.env.unwrapped.set_core_seq_autoplay(True)
+            self.env.unwrapped.set_core_rou_autoplay(True)
         self.name = name
         if azsa.agent_args.filepath != '':
             self.agent = AZAgent(self.env, azsa.agent_args)

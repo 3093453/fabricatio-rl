@@ -1,6 +1,6 @@
 from typing import Tuple, Callable, Optional, List, Union, Dict, Type
 
-import gym
+import gymnasium as gym
 import torch as th
 from stable_baselines3.common.policies import (ActorCriticPolicy,
                                                BaseFeaturesExtractor)

@@ -1,12 +1,12 @@
 from os.path import join
 from pathlib import Path
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 from time import time
 
-from gym import register
+from gymnasium import register
 from fabricatio_rl.interface_templates import SchedulingUserInputs
 
 import fabricatio_rl.visualization_app as va
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     n_steps = 0
     state_repr, done = env.reset(), False
     while not done:
-        las = env.get_legal_actions()
+        las = env.unwrapped.get_legal_actions()
         action = int(np.random.choice(las))
         _, _, done, _ = env.step(action)
         n_steps += 1

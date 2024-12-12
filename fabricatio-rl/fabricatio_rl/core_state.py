@@ -150,8 +150,8 @@ class StateMatrices:
             'x_label': label_x,
             'y_label': label_y,
             'data': matrix.tolist(),
-            'min_value': int(matrix.min(initial=np.infty)),
-            'max_value': int(matrix.max(initial=-np.infty)),
+            'min_value': int(matrix.min()), # .min(initial=np.inf)
+            'max_value': int(matrix.max()), # .max(initial=-np.inf)
             'n_rows': matrix.shape[0],
             'n_cols': matrix.shape[1] if len(matrix.shape) == 2 else 1,
             'nfo_type': nfo_type

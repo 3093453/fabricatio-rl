@@ -86,16 +86,16 @@ class StableBaselinesRLControl(Control):
         self.determinisc_play = deterministic_play
         # training environment
         self.training_env: FabricatioRL = training_envs
-        self.training_env.set_transformer(return_transformer)
-        self.training_env.set_optimizers(optimizers)
-        self.training_env.set_core_seq_autoplay(True)
-        self.training_env.set_core_rou_autoplay(True)
+        self.training_env.unwrapped.set_transformer(return_transformer)
+        self.training_env.unwrapped.set_optimizers(optimizers)
+        self.training_env.unwrapped.set_core_seq_autoplay(True)
+        self.training_env.unwrapped.set_core_rou_autoplay(True)
         # validation environment
         self.validation_env = validation_envs
-        self.validation_env.set_transformer(return_transformer)
-        self.validation_env.set_optimizers(optimizers)
-        self.validation_env.set_core_seq_autoplay(True)
-        self.training_env.set_core_rou_autoplay(True)
+        self.validation_env.unwrapped.set_transformer(return_transformer)
+        self.validation_env.unwrapped.set_optimizers(optimizers)
+        self.validation_env.unwrapped.set_core_seq_autoplay(True)
+        self.training_env.unwrapped.set_core_rou_autoplay(True)
         # agent model
         self.model_params = model_parameters
         self.model = model_class(model_policy, self.training_env,

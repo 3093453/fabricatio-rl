@@ -236,8 +236,8 @@ class ControlResults:
 
     def normalize(self, min_is_best=True):
         for ex in self.experiment_dict.keys():
-            min_makespan = min_tardiness = min_flow_time = np.infty
-            max_throughput_op = max_throughput_j = max_utilization = -np.infty
+            min_makespan = min_tardiness = min_flow_time = np.inf
+            max_throughput_op = max_throughput_j = max_utilization = -np.inf
             for r in self.experiment_dict[ex]:
                 if r.makespan < min_makespan:
                     min_makespan = r.makespan
