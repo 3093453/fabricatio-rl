@@ -1,6 +1,6 @@
 from enum import Enum
 
-import gym
+import gymnasium as gym
 import numpy as np
 import pathos.multiprocessing as pmp
 import torch.multiprocessing as mp
@@ -17,6 +17,10 @@ T = TypeVar('T')
 
 
 class NoDaemonProcess(context.Process):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('group', None)
+        super().__init__(*args, **kwargs)
+
     def _get_daemon(self):
         return False
 
@@ -27,8 +31,12 @@ class NoDaemonProcess(context.Process):
 
 class NoDaemonPool(pmp.Pool):
     # noinspection PyMethodMayBeStatic
-    def Process(self, *args, **kwds):
-        return NoDaemonProcess(*args, **kwds)
+    def Process(self, *args, **kwargs):
+        #kwargs.pop('group', None)
+        # Remove the `ctx` argument if it exists
+        if len(args) > 0 and isinstance(args[0], context.BaseContext):
+            args = args[1:]  # Skip the first argument (ctx)
+        return NoDaemonProcess(*args, **kwargs)
 
 
 def parallelize_heterogeneously(fns: List[Callable],
@@ -179,8 +187,10 @@ def get_benchmark_env(paths: List[str],
 
 
 def make_env(env_name: str, env_args: Dict[str, T]):
-    if env_name in gym.envs.registry.env_specs:
-        del gym.envs.registry.env_specs[env_name]
+    #if env_name in gym.envs.registry.env_specs:
+    # See https://github.com/openai/gym/issues/3097 for change reason
+    if env_name in gym.envs.registry:
+        del gym.envs.registry[env_name]
     gym.register(
         id=env_name,
         entry_point='fabricatio_rl:FabricatioRL',
