@@ -184,7 +184,7 @@ class SchedulingDimensions:
 
         :return: The n_jobs_initial attribute.
         """
-        return self.__max_jobs_visible
+        return self.__n_jobs_initial
     # </editor-fold>
 
     def finalize_n_operations(self, job_idxs):
@@ -450,23 +450,26 @@ class JobMatrices:
         n, o_max, o_js = dims.n_jobs, dims.max_n_operations, dims.n_operations
         als = []
         prec_matrix = np.zeros((n, o_max, o_max))
-        if op_precedence == 'Jm':
-            for j in range(n):
-                als = GraphUtils.get_job_chain_precedence_graphs(n, o_js)
-                for i in range(o_js[j] - 1):
-                    prec_matrix[j][i][i + 1] = 1
-        elif op_precedence == 'POm':
-            for j in range(n):
-                al, am = GraphUtils.get_random_precedence_relation(
-                    o_js[j], o_max, self.__rng)
-                al[(j,)] = al.pop(-1)
-                als.append(al)
-                prec_matrix[j, :, :] = am
-        elif op_precedence == 'Om':
-            for j in range(n):
-                al = {(j,): list(range(o_js[j]))}
-                als.append(al)
-                # prec matrix stays 0
+        if type(op_precedence) == str:
+            if op_precedence == 'Jm':
+                for j in range(n):
+                    als = GraphUtils.get_job_chain_precedence_graphs(n, o_js)
+                    for i in range(o_js[j] - 1):
+                        prec_matrix[j][i][i + 1] = 1
+            elif op_precedence == 'POm':
+                for j in range(n):
+                    al, am = GraphUtils.get_random_precedence_relation(
+                        o_js[j], o_max, self.__rng)
+                    al[(j,)] = al.pop(-1)
+                    als.append(al)
+                    prec_matrix[j, :, :] = am
+            elif op_precedence == 'Om':
+                for j in range(n):
+                    al = {(j,): list(range(o_js[j]))}
+                    als.append(al)
+                    # prec matrix stays 0
+            else:
+                print("Operation Precedence was not correctly specified")
         else:  # matrix was user specified: either ndarray or list of adj. dicts
             als, prec_matrix = JobMatrices.__set_op_precedence_from_spec(
                 dims, op_precedence)  # raises an exception if input doesn't fit
