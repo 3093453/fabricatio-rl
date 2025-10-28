@@ -240,7 +240,7 @@ class MCTS:
                     best_act = a
         # Expand and evaluate
         a = best_act
-        state_frame, _, _, _ = environment.step(a)
+        state_frame, _, _, _, _ = environment.step(a)
         state.append(state_frame)
         v = self.search(environment, state)
         if (s, a) in self.Qsa:
@@ -446,7 +446,8 @@ class AZEpisodeExecutor:
         state = deque([state_frame] * d_size, maxlen=d_size)   # TODO: continue.
         while bool(actions) and not done:
             action, pi = self.__select_action(state, actions)
-            state_frame, reward, done, _ = self.env.step(action)
+            state_frame, reward, terminated, truncated, _ = self.env.step(action)
+            done = terminated or truncated
             trail.append(action)
             actions = self.env.unwrapped.get_legal_actions()
             mask = create_mask(self.env.unwrapped)
@@ -524,8 +525,10 @@ class AZControl(Control):
         for example in all_examples:
             agent.remember(*example)
         agent.history_replay()
+        #fn_main = f"{dqnsa.models_base_dir}dqn_selfplay" \
+        #          f"{n_threads * (it + 1):04d}"
         fn_main = f"{dqnsa.models_base_dir}dqn_selfplay" \
-                  f"{n_threads * (it + 1):04d}"
+                  f"{n_threads * (it + 1):04d}.keras"
         agent.save_model(fn_main)
         return fn_main
 
@@ -580,17 +583,17 @@ class AZControl(Control):
             actions leading to it.
         """
         # setup env interface and autoplay
-        env.set_transformer(self.state_adapter)
-        env.set_optimizers(self.optimizers)
-        env.set_core_seq_autoplay(True)
-        env.set_core_rou_autoplay(True)
-        env.reset()
+        env.unwrapped.set_transformer(self.state_adapter)
+        env.unwrapped.set_optimizers(self.optimizers)
+        env.unwrapped.set_core_seq_autoplay(True)
+        env.unwrapped.set_core_rou_autoplay(True)
+        env.unwrapped.reset()
         # eliminate exploration
         self.agent.temperature = 0
         # tracking variables
         trail = []
-        done, state_frame = False, env.get_state()
-        actions = env.get_legal_actions()
+        done, state_frame = False, env.unwrapped.get_state()
+        actions = env.unwrapped.get_legal_actions()
         n_decisions = 0
         d_size = self.agent.stack_size
         state = deque([state_frame] * d_size, maxlen=d_size)
@@ -599,12 +602,12 @@ class AZControl(Control):
             action, _ = self.agent.act(env, state)
             n_decisions += 1
             trail.append(action)
-            state_frame, reward, done, _ = env.step(action)
+            state_frame, reward, terminated, truncated, _ = env.step(action)
             state.append(state_frame)
             rewards.append(reward)
-            times.append(env.core.state.system_time)
-            actions = env.get_legal_actions()
+            times.append(env.unwrapped.core.state.system_time)
+            actions = env.unwrapped.get_legal_actions()
         if verbose:
             print("Episode ended after {0} decisions".format(len(trail)))
-            print([env.core.state.system_time], trail)
-        return env.core.state
+            print([env.unwrapped.core.state.system_time], trail)
+        return env.unwrapped.core.state
