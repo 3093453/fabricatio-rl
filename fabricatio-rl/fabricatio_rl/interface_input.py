@@ -184,7 +184,7 @@ class SchedulingDimensions:
 
         :return: The n_jobs_initial attribute.
         """
-        return self.__max_jobs_visible
+        return self.__n_jobs_initial
     # </editor-fold>
 
     def finalize_n_operations(self, job_idxs):
@@ -450,23 +450,26 @@ class JobMatrices:
         n, o_max, o_js = dims.n_jobs, dims.max_n_operations, dims.n_operations
         als = []
         prec_matrix = np.zeros((n, o_max, o_max))
-        if op_precedence == 'Jm':
-            for j in range(n):
-                als = GraphUtils.get_job_chain_precedence_graphs(n, o_js)
-                for i in range(o_js[j] - 1):
-                    prec_matrix[j][i][i + 1] = 1
-        elif op_precedence == 'POm':
-            for j in range(n):
-                al, am = GraphUtils.get_random_precedence_relation(
-                    o_js[j], o_max, self.__rng)
-                al[(j,)] = al.pop(-1)
-                als.append(al)
-                prec_matrix[j, :, :] = am
-        elif op_precedence == 'Om':
-            for j in range(n):
-                al = {(j,): list(range(o_js[j]))}
-                als.append(al)
-                # prec matrix stays 0
+        if type(op_precedence) == str:
+            if op_precedence == 'Jm':
+                for j in range(n):
+                    als = GraphUtils.get_job_chain_precedence_graphs(n, o_js)
+                    for i in range(o_js[j] - 1):
+                        prec_matrix[j][i][i + 1] = 1
+            elif op_precedence == 'POm':
+                for j in range(n):
+                    al, am = GraphUtils.get_random_precedence_relation(
+                        o_js[j], o_max, self.__rng)
+                    al[(j,)] = al.pop(-1)
+                    als.append(al)
+                    prec_matrix[j, :, :] = am
+            elif op_precedence == 'Om':
+                for j in range(n):
+                    al = {(j,): list(range(o_js[j]))}
+                    als.append(al)
+                    # prec matrix stays 0
+            else:
+                print("Operation Precedence was not correctly specified")
         else:  # matrix was user specified: either ndarray or list of adj. dicts
             als, prec_matrix = JobMatrices.__set_op_precedence_from_spec(
                 dims, op_precedence)  # raises an exception if input doesn't fit
@@ -491,7 +494,10 @@ class JobMatrices:
         :return: A scaler mask for operation durations.
         """
         n, o, n_ops = dims.n_jobs, dims.max_n_operations, dims.n_operations
-        if op_perturbation == 'default_sampling':
+        if type(op_perturbation) == np.ndarray:
+            assert (op_perturbation > 0).all()
+            m_op_perturbations = op_perturbation
+        elif op_perturbation == 'default_sampling':
             mu, sigma, lo, hi = 1, 1, 0.1, 2
             dist = stats.truncnorm(
                 (lo - mu) / sigma, (hi - mu) / sigma, loc=mu, scale=sigma)
@@ -503,9 +509,6 @@ class JobMatrices:
             p_range_step = (2 * op_perturbation) / 10
             p_range = np.arange(-op_perturbation, op_perturbation, p_range_step)
             m_op_perturbations = self.__rng.choice(1 + p_range, (n, o))
-        elif type(op_perturbation) == np.ndarray:
-            assert (op_perturbation > 0).all()
-            m_op_perturbations = op_perturbation
         elif op_perturbation is None:
             m_op_perturbations = np.ones((n, o))
         else:
@@ -965,7 +968,7 @@ class MachineMatrices:
         for m_i in range(capab_matrix.shape[0]):
             for t_i in range(capab_matrix.shape[1]):
                 if capab_matrix[m_i][t_i] == 1:
-                    if m_i in capab_dict:
+                    if m_i+1 in capab_dict:
                         # types and machines are idexed starting at 1
                         capab_dict[m_i + 1].append(t_i + 1)
                     else:
@@ -999,7 +1002,11 @@ class MachineMatrices:
         :return:
         """
         m, t = dims.n_machines, dims.n_types
-        if machine_capabilities == 'default_sampling':
+        if type(machine_capabilities) == np.ndarray:
+            capab_dict_m = MachineMatrices.__to_capab_dict(machine_capabilities)
+            capab_dict = MachineMatrices.__invert_capab_dict(capab_dict_m)
+            return capab_dict_m, capab_dict, machine_capabilities
+        elif machine_capabilities == 'default_sampling':
             capab_matrix = np.zeros((m, t), dtype=bool)
             capab_dict_m = {}
             encountered_types = set({})
@@ -1027,10 +1034,6 @@ class MachineMatrices:
             capab_matrix = MachineMatrices.__to_capab_matrix(
                 dims, capab_dict_m)
             return capab_dict_m, capab_dict, capab_matrix
-        elif type(machine_capabilities) == np.ndarray:
-            capab_dict_m = MachineMatrices.__to_capab_dict(machine_capabilities)
-            capab_dict = MachineMatrices.__invert_capab_dict(capab_dict_m)
-            return capab_dict_m, capab_dict, machine_capabilities
         elif type(machine_capabilities) == dict:
             if not type_indexed_capabilities:
                 capab_dict_t = MachineMatrices.__invert_capab_dict(

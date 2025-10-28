@@ -2,11 +2,15 @@
 **/__pychache__
 **/.ipynb_checkpoints
 **/sim_data
+experiments/
+experiments/*
+examples/
+venv/
 *.pyc
-/experiments/*.png
 *.ini
 *.7z
 *tfevents*
 */dist/*
 */build/*
 *.egg-info
+MANIFEST.in

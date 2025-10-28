@@ -246,7 +246,7 @@ class SchedulingUserInputs:
                 and self.machine_capabilities is None):  # problem: Jm
             nfo = SchedulingUserInputs.extract_jssp_benchmark_info(self.path)
             n_jobs, n_machines, job_pool = nfo
-            self.__job_pool = np.array(job_pool)
+            self.__job_pool = np.array(job_pool, dtype="object")
             if self.__n_jobs_initial == -1:
                 self.__n_jobs = n_jobs
                 self.__n_jobs_initial = n_jobs
@@ -345,7 +345,7 @@ class SchedulingUserInputs:
             jobs, as well as the Fabricatio format operation type and duration
             matrices.
         """
-        print(getcwd())
+        #print(getcwd())
         instance_file = open(benchmark_f_name)
         n_jobs, n_machine_groups = map(
             int, instance_file.readline().strip().split(' '))

@@ -70,11 +70,11 @@ class Evaluator:
         control_list = load_controls()
         for seed in seeds:
             test_env = load_env(seed)
-            last_env_name = test_env.parameters.scheduling_inputs.name
+            last_env_name = test_env.unwrapped.parameters.scheduling_inputs.name
             test_env_name = ''
             while last_env_name != test_env_name:
                 initial_abservations = test_env.reset()
-                test_env_name = test_env.parameters.name
+                test_env_name = test_env.unwrapped.parameters.name
                 print(f'Experiment {experiment_num}; '
                       f'Instance: {test_env_name}; '
                       f'Seed: {seed}')
@@ -89,7 +89,7 @@ class Evaluator:
                     final_state = control.play_game(deepcopy(test_env),
                                                     initial_abservations)
                     dt = time() - t_s
-                    test_env.core.logger.on = False
+                    test_env.unwrapped.core.logger.on = False
                     c_score = final_state.system_time
                     winner = control.name if c_score <= h_score \
                         else h_name
