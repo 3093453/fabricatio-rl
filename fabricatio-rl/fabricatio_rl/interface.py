@@ -1,4 +1,4 @@
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Any
 
 import gymnasium as gym
 import numpy as np
@@ -154,20 +154,42 @@ class FabricatioRL(gym.Env):
             return state_repr, reward
 
     # <editor-fold desc="Environment Interface">
-    def step(self, action: int):
+    def step(self, action: int) -> tuple[Any, float, bool, bool, dict]:
+        """
+        Returns
+        -------
+        observation/state_repr
+            The state representation of the environment.
+
+        reward:float
+            The reward gained from the action in the current state
+
+        terminated: bool
+            replaces the old `done` response.
+            True if all jobs have been finished. False otherwise
+
+        truncated: bool
+            True if the maximum number of steps has been exhausted to keep the agent
+            from going in circles, e.g. in the frozen lake environment. Not relevant here.
+            
+        info: dict
+            A dictionary containing additional information
+        """
+        truncated=False
+        info = {}
         try:
             direct_action = self.__transform_action(action)
         except IllegalAction:
             state_repr, reward = self.__transform_return(illegal=True)
             self.__no_change_reset = False
-            return state_repr, reward, True, {}
+            return state_repr, reward, True, truncated, info
         self.__update_optimizers(direct_action)
         try:
-            _, done = self.__core.step(direct_action)
+            _, terminated = self.__core.step(direct_action)
         except IllegalAction:
             state_repr, reward = self.__transform_return(illegal=True)
             self.__no_change_reset = False
-            return state_repr, reward, True, {}
+            return state_repr, reward, True, truncated, info
         # TODO: move to tests!!!
         # if self.core.seq_autoplay and not done:
         #     if self.core.wait_legal():
@@ -175,9 +197,9 @@ class FabricatioRL(gym.Env):
         #     else:
         #         assert len(self.__core.state.legal_actions) > 1
         if self.autoplay():
-            done = self.__skip_fixed_decisions(done)
+            terminated = self.__skip_fixed_decisions(terminated)
         state_repr, reward = self.__transform_return(illegal=False)
-        return state_repr, reward, done, {}
+        return state_repr, reward, terminated, truncated, info
 
     def __update_optimizers(self, direct_action):
         if self.sequencing_optimizers is not None:
@@ -226,7 +248,16 @@ class FabricatioRL(gym.Env):
     def set_core_rou_autoplay(self, val):
         self.core.set_rou_autoplay(val)
 
-    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> np.ndarray:
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
+        """
+        Returns
+        -------
+        obs: ndarray
+            an observation, the initial state of the environment
+        info: dict
+            a dictionary containing additional information
+        """
+        info = {}
         # cycle seeds and inputs on reset
         if self.__no_change_reset:
             self.__no_change_reset = False
@@ -242,9 +273,9 @@ class FabricatioRL(gym.Env):
             if self.autoplay():
                 self.__skip_fixed_decisions(False)
         if self.__return_transformer is not None:
-            return self.__return_transformer.transform_state(self.__core.state)
+            return self.__return_transformer.transform_state(self.__core.state), info
         else:
-            return self.__core.state
+            return self.__core.state, info
 
     def render(self, mode='dummy'):
         raise NotImplementedError
@@ -520,6 +551,10 @@ class FabricatioRL(gym.Env):
         
         state_repr = self.__return_transformer.transform_state(
             self.__core.state)
+        if type(state_repr) == tuple:
+            self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf,
+                                                    shape=state_repr[0].shape)
+            return
         self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf,
                                                 shape=state_repr.shape)
 

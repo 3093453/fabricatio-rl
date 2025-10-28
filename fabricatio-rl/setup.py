@@ -38,8 +38,12 @@ setup(
     version='1.0.0',
     python_requires='>3.6.8',
     install_requires=[
-      'gym==0.18.3', 'numpy~=1.19.0', 'pandas==1.1.1', 'scipy==1.5.4',
-      'Flask==2.2.2', 'Flask-RESTful>=0.3.9', 'protobuf==3.20.0'
+#      'gym==0.18.3', 'numpy~=1.23.1', 'pandas==1.1.1', 'scipy==1.5.4',
+      'numpy==2.0.0',
+      'gymnasium==1.0.0',
+      'Flask==2.2.2', 'Flask-RESTful>=0.3.9', 'protobuf==3.20.0',
+      'Werkzeug==2.2.2', # Werkzeug 2.3 and onwards break dependency within Flask.
+      'jsons'
     ],
     description="An Event Discrete Simulation Framework for "
                 "Production Scheduling Problems.",
