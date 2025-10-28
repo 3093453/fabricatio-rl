@@ -2,8 +2,10 @@
 **/__pychache__
 **/.ipynb_checkpoints
 **/sim_data
+**/experiments
 *.pyc
 /experiments/*.png
+experiments
 *.ini
 *.7z
 *tfevents*
